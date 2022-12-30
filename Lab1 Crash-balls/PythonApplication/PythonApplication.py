@@ -29,6 +29,51 @@ def explicit_update():
         lf[i] = f[i]
         f[i][0] = wind[None]
         f[i][1] = gravity[None]
+        v[i] += dt * lf[i]
+        p[i] += dt * lv[i]
+        cross()
+    for i in range(num[None]):
+        for j in range(i + 1, num[None]):
+            if ti.math.length(p[i] - p[j])< 1e-2:
+                l = 0.0
+                r = dt
+                while(r - l > 1e-5):
+                    m = (l + r) / 2
+                    iPos = p[i] - m * lv[i]
+                    jPos = p[j] - m * lv[j]
+                    if ti.math.length(iPos - jPos) < 1e-2:
+                        l = m
+                    else:
+                        r = m
+                p[i] -= r * lv[i]
+                p[j] -= r * lv[j]
+                iTan = ti.math.normalize(p[j] - p[i]) * ti.math.dot(v[i], ti.math.normalize(p[j] - p[i]))
+                jTan = ti.math.normalize(p[i] - p[j]) * ti.math.dot(v[j], ti.math.normalize(p[i] - p[j]))
+                lv[i] -= 2 * iTan
+                lv[j] -= 2 * jTan
+                p[i] += r * lv[i]
+                p[j] += r * lv[j]
+                if ti.math.length(p[i] - p[j]) < 1e-2:
+                    l = 0.0
+                    r = 1e-2
+                    while(r - l > 1e-3):
+                        m = (l + r) / 2
+                        iPos = m * ti.math.normalize(p[i] - p[j])
+                        jPos = m * ti.math.normalize(p[j] - p[i])
+                        if ti.math.length(iPos - jPos) < 1e-2:
+                            l = m
+                        else:
+                            r = m
+                    p[i] += r * ti.math.normalize(p[i] - p[j])
+                    p[j] += r * ti.math.normalize(p[j] - p[i])
+
+@ti.kernel
+def implicit_update():
+    for i in range(num[None]):
+        lp[i] = p[i]
+        lv[i] = v[i]
+        lf[i] = f[i]
+        f[i] = ti.Vector([wind[None], gravity[None]])
         v[i] += dt * f[i]
         p[i] += dt * v[i]
         cross()
@@ -68,13 +113,13 @@ def explicit_update():
                     p[j] += r * ti.math.normalize(p[j] - p[i])
 
 @ti.kernel
-def implicit_update():
+def semi_implicit_update():
     for i in range(num[None]):
         lp[i] = p[i]
         lv[i] = v[i]
         lf[i] = f[i]
         f[i] = ti.Vector([wind[None], gravity[None]])
-        v[i] += dt * f[i]
+        v[i] += dt * lf[i]
         p[i] += dt * v[i]
         cross()
     for i in range(num[None]):
@@ -136,18 +181,19 @@ def add(xpos:ti.f32, ypos:ti.f32):
     if num[None] < max_num:
         p[num[None]] = ti.Vector([xpos, ypos])
         v[num[None]] = ti.Vector([0, 0])
-
+        f[num[None]] = ti.Vector([0, 0])
+        lp[num[None]] = p[num[None]]
+        lv[num[None]] = v[num[None]]
+        lf[num[None]] = f[num[None]]
         num[None] += 1
 
 while gui.running:
-    #if num[None] > 0:
-    #    print(p[0])
     if update_model[None] == 0:
         explicit_update()
     elif update_model[None] == 1:
         implicit_update()
     elif update_model[None] == 2:
-        1
+        semi_implicit_update()
     for e in gui.get_events(ti.GUI.PRESS):
         if e.key == 'a' or e.key == ti.GUI.LEFT:
             wind[None] -= 0.5
