@@ -4,6 +4,8 @@
 
 **~~但作者本人表示看不出啥区别~~**
 
+
+
 *鼠标左键 添加碰撞球*
 
 *w/s 增加/减少重力分量*
@@ -43,6 +45,7 @@ $$
 $$
 \vec x(t_1)=\vec x(t_0)+\vec v(t_1)\Delta t
 $$
+
 
 
 ![image](https://github.com/1242857339/Taichi-simulation/blob/main/Lab1%20Crash-balls/show.png)

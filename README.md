@@ -9,9 +9,9 @@
 
 
 <div align=center>
-<img src="https://github.com/1242857339/Taichi-simulation/blob/main/taichi.png" width = "50%" height = "50%" />
+<img src="https://github.com/1242857339/Taichi-simulation/blob/main/taichi.png" width = "35%" height = "35%" />
 </div>
 
 <div align=center>
-<img src="https://github.com/1242857339/Taichi-simulation/blob/main/book.jpg" width = "50%" height = "50%" />
+<img src="https://github.com/1242857339/Taichi-simulation/blob/main/book.jpg" width = "35%" height = "35%" />
 </div>
