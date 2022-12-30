@@ -24,17 +24,23 @@
 
 *Explicit Euler's Method:*
 $$
-\vec v(t_1)=\vec v(t_0)+M^{-1}\vec F(t_0)\Delta t\\
+\vec v(t_1)=\vec v(t_0)+M^{-1}\vec F(t_0)\Delta t
+$$
+$$
 \vec x(t_1)=\vec x(t_0)+\vec v(t_0)\Delta t
 $$
 *Implicit Euler's Method:*
 $$
-\vec v(t_1)=\vec v(t_0)+M^{-1}\vec F(t_1)\Delta t\\
+\vec v(t_1)=\vec v(t_0)+M^{-1}\vec F(t_1)\Delta t
+$$
+$$
 \vec x(t_1)=\vec x(t_0)+\vec v(t_1)\Delta t
 $$
 *Semi_Implicit Euler's Method:*
 $$
-\vec v(t_1)=\vec v(t_0)+M^{-1}\vec F(t_0)\Delta t\\
+\vec v(t_1)=\vec v(t_0)+M^{-1}\vec F(t_0)\Delta t
+$$
+$$
 \vec x(t_1)=\vec x(t_0)+\vec v(t_1)\Delta t
 $$
 
