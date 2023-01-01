@@ -42,13 +42,13 @@ def compute():
 def pull(xpos:ti.f32, ypos:ti.f32):
     pos = [xpos, ypos]
     for i in range(n):
-        f[i] += 3000000 * (pos - p[i])
+        f[i] += (pos - p[i]) ** 3 * 12000000
 
 @ti.kernel
 def push(xpos:ti.f32, ypos:ti.f32):
     pos = [xpos, ypos]
     for i in range(n):
-        f[i] += 3000000 * (p[i] - pos)
+        f[i] += (p[i] - pos) ** 3 * 12000000
 
 @ti.kernel
 def update():
