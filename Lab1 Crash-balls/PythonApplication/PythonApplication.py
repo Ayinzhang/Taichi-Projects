@@ -118,19 +118,7 @@ def cross():
                 v[j] -= 1.7 * jTan
                 p[i] += r * v[i]
                 p[j] += r * v[j]
-                if ti.math.length(p[i] - p[j]) < 1e-2:
-                    l = 0.0
-                    r = 1e-2
-                    while(r - l > 1e-3):
-                        m = (l + r) / 2
-                        iPos = m * ti.math.normalize(p[i] - p[j])
-                        jPos = m * ti.math.normalize(p[j] - p[i])
-                        if ti.math.length(iPos - jPos) < 1e-2:
-                            l = m
-                        else:
-                            r = m
-                    p[i] += r * ti.math.normalize(p[i] - p[j])
-                    p[j] += r * ti.math.normalize(p[j] - p[i])
+
 
 @ti.kernel
 def add(xpos:ti.f32, ypos:ti.f32):
