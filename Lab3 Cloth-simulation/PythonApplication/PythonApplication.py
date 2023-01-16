@@ -3,12 +3,16 @@ ti.init(ti.gpu)
 
 n = 128
 dt = 1e-3
+substep = int(1 / 60 // dt)
 quad_size = 1.0 / n
 g = ti.Vector([0, -9.8, 0])
 spring_y = 3e4
-s = []
-spring_offsets = ti.Vector.field(2, dtype = int, shape = 12)
+spring_offsets = ti.Vector.field(2, dtype = int, shape = 6)
 spring = ti.types.struct(a = int, b = int, c = int, d = int, e = float)
+s = spring.field()
+block = ti.root.dense(ti.i, 1)
+index = block.dynamic(ti.j, 6 * n * n)
+index.place(s)
 p = ti.Vector.field(3, dtype = float, shape = (n, n))
 v = ti.Vector.field(3, dtype = float, shape = (n, n))
 f = ti.Vector.field(3, dtype = float, shape = (n, n))
@@ -23,18 +27,18 @@ ball_p[0] = [0, 0, 0]
 @ti.kernel
 def init_cloth():
     #physical
-    cnt = 0
-    for i in range(0, 3):
-        for j in range(-2, 3):
-            if (i, j) != (0, 0) and abs(i) + abs(j) <= 2:
-                spring_offsets[cnt] = [i, j]
-                cnt += 1
+    spring_offsets[0] = [0, 2]
+    spring_offsets[1] = [0, 1]
+    spring_offsets[2] = [1, 1]
+    spring_offsets[3] = [2, 0]
+    spring_offsets[4] = [1, 0]
+    spring_offsets[5] = [1,-1]
     for i, j in ti.ndrange(n, n):
-        for k in ti.ndrange(12):
+        for k in range(6):
             ni = i + spring_offsets[k][0]
             nj = j + spring_offsets[k][1]
             if 0 <= ni < n and 0<= nj < n:
-                s.append(spring(i, j, ni, nj, ti.math.length(p[ni, nj] - p[i, j])))
+                s[0].append(spring(i, j, ni, nj, ti.math.length(p[ni, nj] - p[i, j])))
     #rendering
     for i, j in ti.ndrange(n - 1, n - 1):
         quad_id = i * (n - 1) + j
@@ -45,7 +49,6 @@ def init_cloth():
         indices[quad_id * 6 + 4] = i * n + (j + 1)
         indices[quad_id * 6 + 5] = (i + 1) * n + j
     for i, j in ti.ndrange(n, n):
-        vertices[i * n + j] = p[i, j]
         if (i // 4 + j // 4) % 2 == 0:
             colors[i * n + j] = (0.46, 0.84, 0.92)
         else:
@@ -58,17 +61,18 @@ def start():
         p[i, j] = [i * quad_size - 0.5, 0.6, j * quad_size - 0.5] + offset
         v[i, j] = [0, 0, 0]
         f[i, j] = g
+        vertices[i * n + j] = p[i, j]
 
 @ti.kernel
 def update():
     for i,j in ti.ndrange(n, n):
         f[i, j] = g
-    for i in ti.static(s):
-        x = i.a
-        y = i.b
-        nx = i.c
-        ny = i.d
-        dist_original = i.e
+    for i in range(s[0].length()):
+        x = s[0, i].a
+        y = s[0, i].b
+        nx = s[0, i].c
+        ny = s[0, i].d
+        dist_original = s[0, i].e
         dist_current = ti.math.length(p[nx, ny] - p[x, y])
         force = ti.Vector([0.0, 0.0, 0.0])
         force += -spring_y * (dist_current / dist_original - 1)
@@ -82,6 +86,7 @@ def update():
             normal = offset_to_center.normalized()
             v[i, j] -= normal * min(v[i, j].dot(normal), 0)
             p[i, j] = ball_p[0] + ball_r * normal
+        vertices[i * n + j] = p[i, j]
 
 window = ti.ui.Window("Cloth Simulation", (1024, 1024), vsync = True)
 canvas = window.get_canvas()
@@ -92,16 +97,19 @@ camera.position(0, 0, 3)
 camera.lookat(0, 0, 0)
 scene.set_camera(camera)
 t = 0.0
+start()
 init_cloth()
 
 while window.running:
-    if t > 1.5:
+    if t >= 1.5 :
         t = 0
         start()
-    t += dt
-    update()
+    for i in range(substep):
+        t += dt
+        update()
+        print(p[0,0])
     scene.point_light(pos = (0, 1, 2), color = (1, 1, 1))
     scene.mesh(vertices, indices = indices, per_vertex_color = colors, two_sided = True)
-    scene.particles(ball_p, radius = ball_r, color = (0.7, 0, 0))
+    scene.particles(ball_p, radius = ball_r, color = (0.3, 0.2, 0.5))
     canvas.scene(scene)
     window.show()
