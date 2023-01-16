@@ -6,7 +6,7 @@ dt = 1e-3
 substep = int(1 / 60 // dt)
 quad_size = 1.0 / n
 g = ti.Vector([0, -9.8, 0])
-spring_y = 3e4
+spring_y = 1e3
 spring_offsets = ti.Vector.field(2, dtype = int, shape = 6)
 spring = ti.types.struct(a = int, b = int, c = int, d = int, e = float)
 s = spring.field()
@@ -67,6 +67,7 @@ def start():
 def update():
     for i,j in ti.ndrange(n, n):
         f[i, j] = g
+        #v[i, j] *= 0.995
     for i in range(s[0].length()):
         x = s[0, i].a
         y = s[0, i].b
@@ -74,8 +75,7 @@ def update():
         ny = s[0, i].d
         dist_original = s[0, i].e
         dist_current = ti.math.length(p[nx, ny] - p[x, y])
-        force = ti.Vector([0.0, 0.0, 0.0])
-        force += -spring_y * (dist_current / dist_original - 1)
+        force = 0.85 * spring_y * (dist_current / dist_original - 1)
         f[x, y] += force * (p[nx, ny] - p[x, y]).normalized()
         f[nx, ny] += force * (p[x, y] - p[nx, ny]).normalized()
     for i,j in ti.ndrange(n, n):
@@ -107,7 +107,6 @@ while window.running:
     for i in range(substep):
         t += dt
         update()
-        print(p[0,0])
     scene.point_light(pos = (0, 1, 2), color = (1, 1, 1))
     scene.mesh(vertices, indices = indices, per_vertex_color = colors, two_sided = True)
     scene.particles(ball_p, radius = ball_r, color = (0.3, 0.2, 0.5))

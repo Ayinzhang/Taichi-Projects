@@ -1,17 +1,13 @@
-# N-body
+# Cloth-simulation
 
-**空间数据结构加速的多体天体模型，初始随机体积位置并环绕**
+**GGUI布料建模，模拟和场景渲染，以及基于胡克定律的PBD改进**
 
-**~~从O(n^2) 干到O(nlogn)，O(n)的自适应快速多级方法不可能的，洗洗睡吧梦里什么都有~~**
+**~~被Taichi的自动并行化和混乱的数据结构整的硬de了一天的bug~~**
 
+<div align=center>
+<img src="https://pic.rmb.bdstatic.com/dbea74789bd6097d7fdca9be3316f346.jpeg" width = "35%" height = "35%" />
+<center><p>Taichi你个狗杂种！</p></center>
+</div> 
 
+![image](https://github.com/1242857339/Taichi-simulation/blob/main/Lab3%20Cloth-simulation/show.png)
 
-*鼠标左键 对所有天体施加引力*
-
-*鼠标右键 对所有天体施加斥力*
-
-*Esc 退出程序*
-
-
-
-![image](https://github.com/1242857339/Taichi-simulation/blob/main/Lab2%20N-body/show.png)
