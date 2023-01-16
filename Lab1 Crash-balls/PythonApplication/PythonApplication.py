@@ -112,10 +112,10 @@ def cross():
                         r = m
                 p[i] -= r * v[i]
                 p[j] -= r * v[j]
-                iTan = ti.math.normalize(p[j] - p[i]) * ti.math.dot(v[i], (p[j] - p[i]))
-                jTan = ti.math.normalize(p[i] - p[j]) * ti.math.dot(v[j], (p[i] - p[j]))
-                v[i] -= 1.7 * iTan
-                v[j] -= 1.7 * jTan
+                iTan = (p[j] - p[i]).normalized() * (p[j] - p[i]).normalized().dot(v[i])
+                jTan = (p[i] - p[j]).normalized() * (p[i] - p[j]).normalized().dot(v[j])
+                v[i] = v[i] - iTan
+                v[j] = v[j] - jTan
                 p[i] += r * v[i]
                 p[j] += r * v[j]
 

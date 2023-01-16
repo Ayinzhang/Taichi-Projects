@@ -5,6 +5,7 @@ n = 128
 dt = 1e-3
 substep = int(1 / 60 // dt)
 quad_size = 1.0 / n
+d = 1e2
 g = ti.Vector([0, -9.8, 0])
 spring_y = 1e3
 spring_offsets = ti.Vector.field(2, dtype = int, shape = 6)
@@ -75,7 +76,10 @@ def update():
         ny = s[0, i].d
         dist_original = s[0, i].e
         dist_current = ti.math.length(p[nx, ny] - p[x, y])
-        force = 0.85 * spring_y * (dist_current / dist_original - 1)
+        v_relative = (p[nx, ny] - p[x, y]).normalized().dot(v[x, y]) + (p[x, y] - p[nx, ny]).normalized().dot(v[nx, ny])
+        force = spring_y * (dist_current / dist_original - 1)
+        force -= d * v_relative
+        
         f[x, y] += force * (p[nx, ny] - p[x, y]).normalized()
         f[nx, ny] += force * (p[x, y] - p[nx, ny]).normalized()
     for i,j in ti.ndrange(n, n):
