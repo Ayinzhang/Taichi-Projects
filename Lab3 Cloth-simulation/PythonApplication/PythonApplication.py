@@ -28,12 +28,12 @@ ball_p[0] = [0, 0, 0]
 @ti.kernel
 def init_cloth():
     #physical
-    spring_offsets[0] = [0, 2]
-    spring_offsets[1] = [0, 1]
-    spring_offsets[2] = [1, 1]
-    spring_offsets[3] = [2, 0]
-    spring_offsets[4] = [1, 0]
-    spring_offsets[5] = [1,-1]
+    spring_offsets[0] = (0, 2)
+    spring_offsets[1] = (0, 1)
+    spring_offsets[2] = (1, 1)
+    spring_offsets[3] = (2, 0)
+    spring_offsets[4] = (1, 0)
+    spring_offsets[5] = (1,-1)
     for i, j in ti.ndrange(n, n):
         for k in range(6):
             ni = i + spring_offsets[k][0]

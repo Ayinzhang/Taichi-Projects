@@ -14,4 +14,6 @@
 
 
 
-![image](https://github.com/1242857339/Taichi-simulation/blob/main/Lab2%20N-body/show.png)
+<div align=center>
+<img src="https://github.com/1242857339/Taichi-simulation/blob/main/Lab2%20N-body/show.png"/>
+</div> 

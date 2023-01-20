@@ -74,4 +74,6 @@ $$
 
 
 
-![image](https://github.com/1242857339/Taichi-simulation/blob/main/Lab1%20Crash-balls/show.png)
+<div align=center>
+<img src=https://github.com/1242857339/Taichi-simulation/blob/main/Lab1%20Crash-balls/show.png" width = "60%" height = "60%" />
+</div> 
