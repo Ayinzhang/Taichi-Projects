@@ -1,9 +1,9 @@
 # Lab4 Dominoes
 
-**GGUI布料建模，罗德里格旋转公式**
+**多刚体碰撞模拟，各式向量运算和罗德里格旋转公式**
 
-**~~被Taichi的自动并行化和混乱的数据结构整的硬de了一天的bug~~**
+**~~field为什么不能整体自定义赋值？field间嵌套为什么会报错？还有你这UGUI操作怎么这么像OpenGL？~~**
 
 <div align=center>
-<img src="https://github.com/1242857339/Taichi-simulation/blob/main/Lab3%20Cloth-simulation/show.png" width = "60%" height = "60%" />
+<img src="https://github.com/1242857339/Taichi-simulation/blob/main/Lab4%20Dominoes/show.png"/>
 </div> 
