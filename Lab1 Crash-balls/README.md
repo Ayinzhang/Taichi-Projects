@@ -75,5 +75,5 @@ $$
 
 
 <div align=center>
-<img src="https://github.com/1242857339/Taichi-simulation/blob/main/Lab1%20Crash-balls/show.png" width = "60%" height = "60%" />
+<img src="https://github.com/1242857339/Taichi-simulation/blob/main/Lab1%20Crash-balls/show.png" width = "50%" height = "50%" />
 </div> 

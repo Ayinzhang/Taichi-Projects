@@ -9,5 +9,5 @@
 <center><p>Taichi你个狗杂种！</p></center>
 </div> 
 <div align=center>
-<img src="https://github.com/1242857339/Taichi-simulation/blob/main/Lab3%20Cloth-simulation/show.png" width = "60%" height = "60%" />
+<img src="https://github.com/1242857339/Taichi-simulation/blob/main/Lab3%20Cloth-simulation/show.png" width = "50%" height = "50%" />
 </div> 

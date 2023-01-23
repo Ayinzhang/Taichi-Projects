@@ -15,5 +15,5 @@
 
 
 <div align=center>
-<img src="https://github.com/1242857339/Taichi-simulation/blob/main/Lab2%20N-body/show.png"/>
+<img src="https://github.com/1242857339/Taichi-simulation/blob/main/Lab2%20N-body/show.png" width = "80%" height = "80%"/>
 </div> 
