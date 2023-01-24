@@ -116,51 +116,51 @@ def update():
     w[11] = w[11] + (p11[3] - p11[7]).normalized().cross(ti.Vector((0, -1, 0))).norm()
     w[12] = w[12] + (p12[3] - p12[7]).normalized().cross(ti.Vector((0, -1, 0))).norm()
 
-    if (p1[5] - p1[0]).cross(p1[1] - p1[0]).dot(rotate(p0[7],p0[3],p0[2],w[0]) - p1[0]) < 0:
+    if (p1[5] - p1[0]).cross(p1[1] - p1[0]).dot(rotate(p0[7],p0[3],p0[2],w[0]) - p1[0]) < 0 or (p1[5] - p1[0]).cross(p1[1] - p1[0]).dot(p0[3] - p1[0]) < 0:
         w[1] = w[1] + w[0] * (p0[1] - p0[0]).normalized().dot((p1[1] - p1[0]).normalized())
         w[0] = 0
 
-    if (p2[5] - p2[0]).cross(p2[1] - p2[0]).dot(rotate(p1[7],p1[3],p1[2],w[1]) - p2[0]) < 0:
+    if (p2[5] - p2[0]).cross(p2[1] - p2[0]).dot(rotate(p1[7],p1[3],p1[2],w[1]) - p2[0]) < 0 or (p2[5] - p2[0]).cross(p2[1] - p2[0]).dot(p1[3] - p2[0]) < 0:
         w[2] = w[2] + w[1] * (p1[1] - p1[0]).normalized().dot((p2[1] - p2[0]).normalized())
         w[1] = 0
 
-    if (p3[5] - p3[0]).cross(p3[1] - p3[0]).dot(rotate(p2[7],p2[3],p2[2],w[2]) - p3[0]) < 0:
+    if (p3[5] - p3[0]).cross(p3[1] - p3[0]).dot(rotate(p2[7],p2[3],p2[2],w[2]) - p3[0]) < 0 or (p3[5] - p3[0]).cross(p2[1] - p2[0]).dot(p1[3] - p2[0]) < 0:
         w[3] = w[3] + w[2] * (p2[1] - p2[0]).normalized().dot((p3[1] - p3[0]).normalized())
         w[2] = 0
 
-    if (p4[5] - p4[0]).cross(p4[1] - p4[0]).dot(rotate(p4[7],p3[3],p3[2],w[3]) - p4[0]) < 0:
+    if (p4[5] - p4[0]).cross(p4[1] - p4[0]).dot(rotate(p3[7],p3[3],p3[2],w[3]) - p4[0]) < 0 or (p4[5] - p4[0]).cross(p4[1] - p4[0]).dot(p3[3] - p4[0]) < 0:
         w[4] = w[4] + w[3] * (p3[1] - p3[0]).normalized().dot((p4[1] - p4[0]).normalized())
         w[3] = 0
 
-    if (p5[5] - p5[0]).cross(p5[1] - p5[0]).dot(rotate(p4[7],p4[3],p4[2],w[4]) - p5[0]) < 0:
+    if (p5[5] - p5[0]).cross(p5[1] - p5[0]).dot(rotate(p4[7],p4[3],p4[2],w[4]) - p5[0]) < 0 or (p5[5] - p5[0]).cross(p5[1] - p5[0]).dot(p4[3] - p5[0]) < 0:
         w[5] = w[5] + w[4] * (p4[1] - p4[0]).normalized().dot((p5[1] - p5[0]).normalized())
         w[4] = 0
 
-    if (p6[5] - p6[0]).cross(p6[1] - p6[0]).dot(rotate(p5[7],p5[3],p5[2],w[5]) - p6[0]) < 0:
+    if (p6[5] - p6[0]).cross(p6[1] - p6[0]).dot(rotate(p5[7],p5[3],p5[2],w[5]) - p6[0]) < 0 or (p6[5] - p6[0]).cross(p6[1] - p6[0]).dot(p5[3] - p6[0]) < 0:
         w[6] = w[6] + w[5] * (p5[1] - p5[0]).normalized().dot((p6[1] - p6[0]).normalized())
         w[5] = 0
 
-    if (p7[5] - p7[0]).cross(p7[1] - p7[0]).dot(rotate(p6[7],p6[3],p6[2],w[6]) - p7[0]) < 0:
+    if (p7[5] - p7[0]).cross(p7[1] - p7[0]).dot(rotate(p6[7],p6[3],p6[2],w[6]) - p7[0]) < 0 or (p7[5] - p7[0]).cross(p7[1] - p7[0]).dot(p6[3] - p7[0]) < 0:
         w[7] = w[7] + w[6] * (p6[1] - p6[0]).normalized().dot((p7[1] - p7[0]).normalized())
         w[6] = 0
 
-    if (p8[5] - p8[0]).cross(p8[1] - p8[0]).dot(rotate(p7[7],p7[3],p7[2],w[7]) + p7[2] - p7[3] - p8[0]) < 0:
+    if (p8[5] - p8[0]).cross(p8[1] - p8[0]).dot(rotate(p7[7],p7[3],p7[2],w[7]) + p7[2] - p7[3] - p8[0]) < 0 or (p8[5] - p8[0]).cross(p8[1] - p8[0]).dot(p7[2] - p8[0]) < 0:
         w[8] = w[8] + w[7] * (p7[1] - p7[0]).normalized().dot((p8[1] - p8[0]).normalized())
         w[7] = 0
 
-    if (p9[5] - p9[0]).cross(p9[1] - p9[0]).dot(rotate(p8[7],p8[3],p8[2],w[8]) + p8[2] - p8[3] - p9[0]) < 0:
+    if (p9[5] - p9[0]).cross(p9[1] - p9[0]).dot(rotate(p8[7],p8[3],p8[2],w[8]) + p8[2] - p8[3] - p9[0]) < 0 or (p9[5] - p9[0]).cross(p9[1] - p9[0]).dot(p8[2] - p9[0]) < 0:
         w[9] = w[9] + w[8] * (p8[1] - p8[0]).normalized().dot((p9[1] - p9[0]).normalized())
         w[8] = 0
 
-    if (p10[5] - p10[0]).cross(p10[1] - p10[0]).dot(rotate(p9[7],p9[3],p9[2],w[9]) + p9[2] - p9[3] - p10[0]) < 0:
+    if (p10[5] - p10[0]).cross(p10[1] - p10[0]).dot(rotate(p9[7],p9[3],p9[2],w[9]) + p9[2] - p9[3] - p10[0]) < 0 or (p10[5] - p10[0]).cross(p10[1] - p10[0]).dot(p9[2] - p10[0]) < 0:
         w[10] = w[10] + w[9] * (p9[1] - p9[0]).normalized().dot((p10[1] - p10[0]).normalized())
         w[9] = 0
 
-    if (p11[5] - p11[0]).cross(p11[1] - p11[0]).dot(rotate(p10[7],p10[3],p10[2],w[10]) - p11[0]) < 0:
+    if (p11[5] - p11[0]).cross(p11[1] - p11[0]).dot(rotate(p10[7],p10[3],p10[2],w[10]) - p11[0]) < 0 or (p11[5] - p11[0]).cross(p11[1] - p11[0]).dot(p10[3] - p11[0]) < 0:
         w[11] = w[11] + w[10] * (p10[1] - p10[0]).normalized().dot((p11[1] - p11[0]).normalized())
         w[10] = 0
 
-    if (p12[5] - p12[0]).cross(p12[1] - p12[0]).dot(rotate(p11[7],p11[3],p11[2],w[11]) - p12[0]) < 0:
+    if (p12[5] - p12[0]).cross(p12[1] - p12[0]).dot(rotate(p11[7],p11[3],p11[2],w[11]) - p12[0]) < 0 or (p12[5] - p12[0]).cross(p12[1] - p12[0]).dot(p11[3] - p12[0]) < 0:
         w[12] = w[12] + w[11] * (p11[1] - p11[0]).normalized().dot((p12[1] - p12[0]).normalized())
         w[11] = 0
 
