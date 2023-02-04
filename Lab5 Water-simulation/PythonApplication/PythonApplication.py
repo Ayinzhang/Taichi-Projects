@@ -1,67 +1,232 @@
+import math
+import numpy as np
 import taichi as ti
-from taichi.math import *
+
 ti.init(ti.gpu)
 
-n = 24
-dt = 1e-5
-water_size = 0.3
-quad_size = 2 * water_size / n
-box_size = 0.5
-block_size = 10
+screen_res = (800, 800)
+screen_to_world_ratio = 20.0
+boundary = (screen_res[0]/screen_to_world_ratio, screen_res[1]/screen_to_world_ratio, screen_res[0]/screen_to_world_ratio)
+cell_size = 2.51
+cell_recpr = 1.0 / cell_size
 
-g = ti.Vector([0, -9.8, 0])
-p = ti.Vector.field(3, dtype = float, shape = n * n * n)
-v = ti.Vector.field(3, dtype = float, shape = n * n * n)
-index = ti.field(ti.i32)
-block = ti.root.dense(ti.i, block_size * block_size * block_size)
-data = block.dynamic(ti.j, n * n * n)
-data.place(index)
+def round_up(f, s):
+    return (math.floor(f * cell_recpr / s) + 1) * s
 
-for i,j,k in ti.ndrange(n, n, n):
-    p[i + j * n + k * n * n] = ti.Vector([-water_size + i * quad_size, -water_size + j * quad_size, -water_size + k * quad_size])
+grid_size = (round_up(boundary[0], 1), round_up(boundary[1], 1), round_up(boundary[2], 1))
 
-window = ti.ui.Window("Water-simulation", (648, 648), vsync = True)
-canvas = window.get_canvas()
-canvas.set_background_color((0, 0, 0))
-scene = ti.ui.Scene()
-camera = ti.ui.make_camera()
-camera.position(0, 1.5, 1.5)
-camera.lookat(0, 0, 0)
-scene.set_camera(camera)
+dim = 3
+bg_color = 0x112f41
+particle_color = 0x068587
+boundary_color = 0xebaca2
+num_particles_x = 10
+num_particles = 10000
+max_num_particles_per_cell = 1000
+max_num_neighbors = 1000
+time_delta = 1.0 / 20.0
+epsilon = 1e-5
+particle_radius = 3.0
+particle_radius_in_world = particle_radius / screen_to_world_ratio
+
+h = 1.1
+mass = 1.0
+rho0 = 1.0
+lambda_epsilon = 100.0
+pbf_num_iters = 5
+corr_deltaQ_coeff = 0.3
+corrK = 0.001
+neighbor_radius = h * 1.05
+
+poly6_factor = 315.0 / 64.0 / math.pi
+spiky_grad_factor = -45.0 / math.pi
+
+old_positions = ti.Vector.field(dim, float)
+positions = ti.Vector.field(dim, float)
+velocities = ti.Vector.field(dim, float)
+grid_num_particles = ti.field(int)
+particle_num_neighbors = ti.field(int)
+particle_neighbors = ti.field(int)
+lambdas = ti.field(float)
+position_deltas = ti.Vector.field(dim, float)
+
+ti.root.dense(ti.i, num_particles).place(old_positions, positions, velocities)
+grid_snode = ti.root.dense(ti.ijk, grid_size) 
+grid_snode.place(grid_num_particles)
+
+grid2particles = ti.field(int, (grid_size + (max_num_particles_per_cell,)))
+nb_node = ti.root.dense(ti.i, num_particles)
+nb_node.place(particle_num_neighbors)
+nb_node.dense(ti.j, max_num_neighbors).place(particle_neighbors)
+ti.root.dense(ti.i, num_particles).place(lambdas, position_deltas)
 
 @ti.kernel
+def init():
+    init_pos = ti.Vector([10.0,10.0,10.0]) 
+    cube_size = 20
+    spacing = 1
+    num_per_row = (int) (cube_size // spacing) + 1
+    num_per_floor = num_per_row * num_per_row
+    for i in range(num_particles):
+        floor = i // (num_per_floor) 
+        row = (i % num_per_floor) // num_per_row
+        col = (i % num_per_floor) % num_per_row
+        positions[i] = ti.Vector([col*spacing, floor*spacing, row*spacing]) + init_pos
+
+@ti.func
+def poly6_value(s, h):
+    result = 0.0
+    if 0 < s and s < h:
+        x = (h * h - s * s) / (h * h * h)
+        result = poly6_factor * x * x * x
+    return result
+
+@ti.func
+def spiky_gradient(r, h):
+    result = ti.Vector([0.0, 0.0, 0.0])
+    r_len = r.norm()
+    if 0 < r_len and r_len < h:
+        x = (h - r_len) / (h * h * h)
+        g_factor = spiky_grad_factor * x * x
+        result = r * g_factor / r_len
+    return result
+
+@ti.func
+def compute_scorr(pos_ji):
+    x = poly6_value(pos_ji.norm(), h) / poly6_value(corr_deltaQ_coeff * h, h)
+    x = x * x
+    x = x * x
+    return (-corrK) * x
+
+
+@ti.func
+def get_cell(pos):
+    return int(pos * cell_recpr)
+
+@ti.func
+def is_in_grid(c):
+    return 0 <= c[0] and c[0] < grid_size[0] and 0 <= c[1] and c[
+        1] < grid_size[1]
+
+@ti.func
+def confine_position_to_boundary(p):
+    bmin = particle_radius_in_world
+    bmax = ti.Vector([boundary[0], boundary[1], boundary[2]]) - particle_radius_in_world
+    for i in ti.static(range(dim)):
+        if p[i] <= bmin:
+            p[i] = bmin + epsilon * ti.random()
+        elif bmax[i] <= p[i]:
+            p[i] = bmax[i] - epsilon * ti.random()
+    return p
+
+@ti.kernel
+def prestep():
+    for i in positions:
+        old_positions[i] = positions[i]
+    for i in positions:
+        g = ti.Vector([0.0, -10.0, 0.0])
+        pos, vel = positions[i], velocities[i]
+        vel += g * time_delta
+        pos += vel * time_delta
+        positions[i] = confine_position_to_boundary(pos)
+
+    for i in ti.grouped(grid_num_particles):
+        grid_num_particles[i] = 0
+    for i in ti.grouped(particle_neighbors):
+        particle_neighbors[i] = -1
+
+    for p_i in positions:
+        cell = get_cell(positions[p_i])
+        offs = ti.atomic_add(grid_num_particles[cell], 1)
+        grid2particles[cell, offs] = p_i
+
+    for p_i in positions:
+        pos_i = positions[p_i]
+        cell = get_cell(pos_i)
+        nb_i = 0
+        for offs in ti.static(ti.grouped(ti.ndrange((-1, 2), (-1, 2),(-1, 2)))):
+            cell_to_check = cell + offs
+            if is_in_grid(cell_to_check):
+                for j in range(grid_num_particles[cell_to_check]):
+                    p_j = grid2particles[cell_to_check, j]
+                    if nb_i < max_num_neighbors and p_j != p_i and (pos_i - positions[p_j]).norm() < neighbor_radius:
+                        particle_neighbors[p_i, nb_i] = p_j
+                        nb_i += 1
+        particle_num_neighbors[p_i] = nb_i
+
+
+@ti.kernel
+def substep():
+    for p_i in positions:
+        pos_i = positions[p_i]
+        grad_i = ti.Vector([0.0, 0.0, 0.0])
+        sum_gradient_sqr = 0.0
+        density_constraint = 0.0
+
+        for j in range(particle_num_neighbors[p_i]):
+            p_j = particle_neighbors[p_i, j]
+            if p_j < 0:
+                break
+            pos_ji = pos_i - positions[p_j]
+            grad_j = spiky_gradient(pos_ji, h)
+            grad_i += grad_j
+            sum_gradient_sqr += grad_j.dot(grad_j)
+            density_constraint += poly6_value(pos_ji.norm(), h)
+
+        density_constraint = (mass * density_constraint / rho0) - 1.0
+        sum_gradient_sqr += grad_i.dot(grad_i)
+        lambdas[p_i] = (-density_constraint) / (sum_gradient_sqr + lambda_epsilon)
+
+    for p_i in positions:
+        pos_i = positions[p_i]
+        lambda_i = lambdas[p_i]
+        pos_delta_i = ti.Vector([0.0, 0.0, 0.0])
+
+        for j in range(particle_num_neighbors[p_i]):
+            p_j = particle_neighbors[p_i, j]
+            if p_j < 0:
+                break
+            lambda_j = lambdas[p_j]
+            pos_ji = pos_i - positions[p_j]
+            scorr_ij = compute_scorr(pos_ji)
+            pos_delta_i += (lambda_i + lambda_j + scorr_ij) * spiky_gradient(pos_ji, h)
+
+        pos_delta_i /= rho0
+        position_deltas[p_i] = pos_delta_i
+
+    for i in positions:
+        positions[i] += position_deltas[i]
+
+@ti.kernel
+def endstep():
+    for i in positions:
+        pos = positions[i]
+        positions[i] = confine_position_to_boundary(pos)
+
+    for i in positions:
+        velocities[i] = (positions[i] - old_positions[i]) / time_delta
+
 def update():
-    for i in range(block_size * block_size * block_size):
-        index[i].deactivate()
-    for i,j,k in ti.ndrange(n, n, n):
-        v[i + j * n + k * n * n] += g * dt
-        p[i + j * n + k * n * n] += v[i + j * n + k * n * n]
-        for o in range(3):
-            if p[i + j * n + k * n * n][o] < -box_size:
-                v[i + j * n + k * n * n][o] = 0
-                p[i + j * n + k * n * n][o] = -box_size
-            elif p[i + j * n + k * n * n][o] > box_size:
-                v[i + j * n + k * n * n][o] = 0
-                p[i + j * n + k * n * n][o] = box_size
-        index[int((box_size + p[i + j * n + k * n * n][0])//(2 * box_size / block_size)) +
-              int((box_size + p[i + j * n + k * n * n][1])//(2 * box_size / block_size)) * block_size +
-              int((box_size + p[i + j * n + k * n * n][2])//(2 * box_size / block_size)) * block_size * block_size].append(i + j * n + k * n * n)
-    for i in range(block_size * block_size * block_size):
-        for j in range(index[i].length()):
-            for k in range(j):
-                if (p[index[i, j]] - p[index[i, k]]).norm() < 2 * quad_size:
-                    pjk = (p[index[i, j]] - p[index[i, k]]).normalized()
-                    offset = (2 * quad_size - (p[index[i, j]] - p[index[i, k]]).norm()) / 2
-                    v[index[i, j]] = v[index[i, j]] + v[index[i, j]].dot(pjk) * pjk + pjk * v[index[i, j]].dot(pjk)
-                    v[index[i, k]] = v[index[i, k]] - v[index[i, k]].dot(pjk) * pjk - pjk * v[index[i, k]].dot(pjk)
-                    p[index[i, j]] = p[index[i, j]] + offset * pjk
-                    p[index[i, k]] = p[index[i, k]] - offset * pjk
+    prestep()
+    for cnt in range(pbf_num_iters):
+        substep()
+    endstep()
 
+def T(a):
+    if dim == 2:
+        return a
+    phi, theta = np.radians(28), np.radians(32)
+    a = a - 0.5
+    x, y, z = a[:, 0], a[:, 1], a[:, 2]
+    c, s = np.cos(phi), np.sin(phi)
+    C, S = np.cos(theta), np.sin(theta)
+    x, z = x * c + z * s, z * c - x * s
+    u, v = x, y * C + z * S
+    return np.array([u, v]).swapaxes(0, 1) + 25
 
-while window.running:
+init()
+gui = ti.GUI("Water-simulation", (648, 648), background_color = 0xffffff) 
+while gui.running and not gui.get_event(gui.ESCAPE):
     update()
-    #scene.ambient_light((0.5, 0.5, 0.5))
-    scene.point_light(pos=(0.5, 1.5, 1.5), color=(1, 1, 1))
-    scene.particles(p, radius = quad_size, color = (13/255, 144/255, 191/255))
-    canvas.scene(scene)
-    window.show()
+    pos = positions.to_numpy()
+    gui.circles(T(pos)/100.0, radius=3, color=0x66ccff)
+    gui.show()

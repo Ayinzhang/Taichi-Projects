@@ -1,10 +1,13 @@
 # Lab5 Water-simulation
 
-**多刚体碰撞模拟，各式向量运算和罗德里格旋转公式**
+**PBF流体模拟，Position Based Fluids的复现**
 
-**~~field为什么不能整体自定义赋值？field间嵌套为什么会报错？还有你这UGUI操作怎么这么像OpenGL？~~**
+**~~说的几十万个粒子实时呢？我这开一万个还没模拟就炸了，GTX1650也不算太低吧这~~**
 
 <div align=center>
-<img src="https://github.com/1242857339/Taichi-simulation/blob/main/Lab5%20Dominoes/show.png" width = "50%" height = "50%" />
+<img src="https://github.com/1242857339/Taichi-simulation/blob/main/Lab5%20Water-simulation/fuck.jpg" width = "50%" height = "50%" />
+<center><p>Taichi再见了您嘞！</p></center>
 </div> 
-
+<div align=center>
+<img src="https://github.com/1242857339/Taichi-simulation/blob/main/Lab5%20Water-simulation/show.png" width = "50%" height = "50%" />
+</div> 
