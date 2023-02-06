@@ -10,7 +10,7 @@
 
 *Lab4 GGUI多刚体碰撞模拟，各式向量运算和罗德里格旋转公式*
 
-*Lab5 GUI二渲三PBF流体模拟，Position Based Fluids的复现*
+*Lab5 GUI三维PBF流体模拟，Position Based Fluids的复现*
 
 <div align=center>
 <img src="https://github.com/1242857339/Taichi-simulation/blob/main/taichi.png" width = "35%" height = "35%" />
