@@ -12,6 +12,8 @@
 
 *Lab5 GUI三维PBF流体模拟，Position Based Fluids的复现*
 
+*Lab6 GUI隐式线性求解温度传播，稀疏矩阵和线性求解器的初探*
+
 <div align=center>
 <img src="https://github.com/1242857339/Taichi-simulation/blob/main/taichi.png" width = "35%" height = "35%" />
 </div>
