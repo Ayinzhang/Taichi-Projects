@@ -10,8 +10,7 @@ t_max = 300
 paused = False
 n2 = n * n
 c = dt * k
-t0 = ti.field(ti.f32, n2)
-t1 = ti.field(ti.f32, n2)
+t = ti.field(ti.f32, n2)
 pixels = ti.Vector.field(3, ti.f32, (n, n))
 D_Builder = ti.linalg.SparseMatrixBuilder(n2, n2, 5 * n2)
 
@@ -37,16 +36,16 @@ def fillDiffusionMatrixBuilder(A: ti.types.sparse_matrix_builder()):
 def init():
     for i,j in ti.ndrange(n, n):
         if (i - n // 2) ** 2 + (j - n // 2) ** 2 <= radius ** 2:
-            t0[i * n + j] = t_max
+            t[i * n + j] = t_max
         else:
-            t0[i * n + j] = t_min
+            t[i * n + j] = t_min
 
 @ti.kernel
 def update_sourse():
     for i in range(n // 2 - radius, n // 2 + radius + 1):
         for j in range(n // 2 - radius, n // 2 + radius + 1):
             if (i - n // 2) ** 2 + (j - n // 2) ** 2 <= radius ** 2:
-                t0[i * n + j] = t_max
+                t[i * n + j] = t_max
 
 @ti.kernel
 def cook(t: ti.template(), color: ti.template(), t_min: ti.f32, t_max: ti.f32):
@@ -73,7 +72,7 @@ D = D_Builder.build()
 solver = ti.linalg.SparseSolver(solver_type="LLT")
 solver.analyze_pattern(D)
 solver.factorize(D)
-
+ti.profiler.clear_kernel_profiler_info()
 while gui.running:
     for e in gui.get_events(ti.GUI.PRESS):
         if e.key == ti.GUI.SPACE:
@@ -83,9 +82,8 @@ while gui.running:
         elif e.key == 'r':
             init()
     if not paused:
-        t1.from_numpy(solver.solve(t0))
-        t0.copy_from(t1)
+        t.from_numpy(solver.solve(t))
         update_sourse()
-        cook(t0, pixels, t_min, t_max)
+        cook(t, pixels, t_min, t_max)
     gui.set_image(pixels)
     gui.show()
