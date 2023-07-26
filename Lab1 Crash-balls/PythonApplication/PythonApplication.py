@@ -30,7 +30,6 @@ def explicit_update():
         f[i] = ti.Vector([wind[None], gravity[None]])
         v[i] += dt * lf[i]
         p[i] += dt * lv[i]
-        cross()
 
 @ti.kernel
 def implicit_update():
@@ -41,7 +40,6 @@ def implicit_update():
         f[i] = ti.Vector([wind[None], gravity[None]])
         v[i] += dt * f[i]
         p[i] += dt * v[i]
-        cross()
 
 @ti.kernel
 def semi_implicit_update():
@@ -52,7 +50,6 @@ def semi_implicit_update():
         f[i] = ti.Vector([wind[None], gravity[None]])
         v[i] += dt * lf[i]
         p[i] += dt * v[i]
-        cross()
 
 @ti.kernel
 def velocity_welley_update():
@@ -63,7 +60,6 @@ def velocity_welley_update():
         f[i] = ti.Vector([wind[None], gravity[None]])
         p[i] += dt * v[i] + f[i] * dt ** 2 / 2
         v[i] += dt * (lf[i] + f[i]) / 2
-        cross()
 
 @ti.kernel
 def runge_kutta2():
@@ -77,10 +73,9 @@ def runge_kutta2():
         f[i] = ti.Vector([wind[None], gravity[None]])
         v[i] += dt * lf[i]
         p[i] += dt * lv[i]
-        cross()
 
-@ti.func
-def cross():
+@ti.kernel
+def update():
     for i in range(num[None]):
         for j in ti.static(range(2)):
             if p[i][j] < 0:
@@ -142,6 +137,7 @@ while gui.running:
         velocity_welley_update()
     elif update_model[None] == 4:
          runge_kutta2()
+    update()
     for e in gui.get_events(ti.GUI.PRESS):
         if e.key == 'a' or e.key == ti.GUI.LEFT:
             wind[None] -= 0.5
