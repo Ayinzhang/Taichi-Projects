@@ -16,6 +16,8 @@
 
 *Lab7 GUI路径追踪，康奈尔盒子简易路径追踪*
 
+*Lab7 GUI流体扩散，欧拉视角半拉格朗日平流加雅可比投影*
+
 <div align=center>
 <img src="https://github.com/1242857339/Taichi-simulation/blob/main/taichi.png" width = "35%" height = "35%" />
 </div>
