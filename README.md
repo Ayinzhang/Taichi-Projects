@@ -1,22 +1,17 @@
 # Taichi-simulation
 
-**假期及实习间隙做的一些杂项，基于taichi图形课以及《基于物理的建模与动画》**
+[中文版](README_zh.md)
 
-*Lab1 GUI碰撞模拟 回溯碰撞解除，五种积分方式*
+**Miscellaneous works done during holidays and internship breaks, some based on Taichi graphics class and 'Physics based Modeling and Animation'**
 
-*Lab2 GUI多体天体模拟  空间数据结构加速，初始随机体积位置并环绕*
-
-*Lab3 GGUI布料模拟，基于胡克定律的PBD改进*
-
-*Lab4 GGUI多刚体碰撞模拟，各式向量运算和罗德里格旋转公式*
-
-*Lab5 GUI三维PBF流体模拟，Position Based Fluids的复现*
-
-*Lab6 GUI隐式线性求解温度传播，稀疏矩阵和线性求解器的初探*
-
-*Lab7 GUI路径追踪，康奈尔盒子简易路径追踪*
-
-*Lab8 GUI流体扩散，欧拉视角半拉格朗日平流加雅可比投影*
+*Lab1 GUI collision simulation backtracking collision release, five integration methods*
+*Lab2 GUI multi-body celestial body simulation space data structure acceleration, initial random volume position and surrounding*
+*Lab3 GGUI Fabric Simulation, PBD Improvement Based on Hooke's Law*
+*Lab4 GGUI Multi Body Collision Simulation, Various Vector Operations, and Rodrigues Rotation Formula*
+*Lab5 GUI 3D PBF fluid simulation, reproduction of Position Based Fluids*
+*Lab6 GUI Preliminary Exploration of implicit Linear Solution for Temperature Propagation, Sparse Matrix, and Linear Solver*
+*Lab7 GUI Path Tracking, Cornell Box Easy Path Tracking*
+*Lab8 GUI fluid diffusion, Euler perspective semi Lagrangian advection with Jacobian projection*
 
 <div align=center>
 <img src="https://github.com/1242857339/Taichi-simulation/blob/main/taichi.png" width = "35%" height = "35%" />
